@@ -35,6 +35,5 @@ int main() {
         assert(x == 20);
       }
   )
-  alarm(2);
   return 0;
 }
