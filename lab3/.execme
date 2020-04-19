@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+IFS=$'\n\t'
+
+echo "Task 4,3"
+
+mem_allocs=(1 16 128 512)
+for i in "${mem_allocs[@]}" ; do
+  echo "Running with $i Mb allocation..."
+  "$1/lab3_memory-user.c_run" "$i" &
+  JOB_PID=$!
+  sleep 3
+
+  echo "pmap -X $JOB_PID command:"
+  pmap -X $JOB_PID
+  echo
+
+  echo "Before termination:"
+  echo "free -m command:"
+  free -m
+  echo
+
+  kill $JOB_PID
+  sleep 3
+  echo "After termination:"
+  free -m
+  echo "------------------"
+done

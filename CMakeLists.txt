@@ -14,3 +14,4 @@ function(define_lab lab_name)
 endfunction()
 
 define_lab(lab2)
+define_lab(lab3)
