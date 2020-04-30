@@ -15,3 +15,4 @@ endfunction()
 
 define_lab(lab2)
 define_lab(lab3)
+define_lab(lab4)
