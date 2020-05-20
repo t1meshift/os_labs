@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+IFS=$'\n\t'
+
+LAB_FILE="$1/lab7_switch_case.c_run"
+
+function test_string() {
+  local str=$1
+  echo "Testing on string \`" $str "\`..."
+  echo -e $str | $LAB_FILE
+}
+
+test_string "Hello :)"
+test_string "24 character long string"
+test_string "Hello World! Not 8-even-sized string"
+test_string "The test string, even with NUMBERS!\n1234 and 5678."
