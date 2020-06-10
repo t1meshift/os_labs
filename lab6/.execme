@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+IFS=$'\n\t'
+
+function assert() {
+  local checksum_prg="./lab6_check-$1.c_run"
+  local input=$2
+  local expected=$3
+  local got
+  echo "Testing $1 on string \`"$input"'..."
+  got=$($checksum_prg -q <(printf "%s" "$input"))
+  if diff -q <(echo "$got") <(echo "$expected") > /dev/null; then
+    echo "OK!"
+  else
+    echo "Assertion failed!"
+    echo "Expected: $expected"
+    echo "Got: $got"
+  fi
+}
+
+function run_bench() {
+  local checksum_prg="./lab6_check-$1.c_run"
+
+  echo "Benchmarking $1 with file $2..."
+  $checksum_prg -b "$2"
+}
+
+pushd "$1" > /dev/null
+
+# Checked with https://www.scadacore.com/tools/programming-calculators/online-checksum-calculator/
+
+assert xor "123456789" "0x31"
+assert xor "444444444444444444444444444" "0x34"
+assert xor "4444444444444444444444444444" "0x00"
+assert xor "444444444444444444444444444\n" "0x06"
+assert xor "Test string" "0x03"
+assert xor "Try not to laugh1!%&<>z" "0x0d"
+
+# Checked with https://gchq.github.io/CyberChef/#recipe=Fletcher-16_Checksum()
+
+assert fletcher "44" "0x9c68"
+assert fletcher "Test string" "0x6e5b"
+assert fletcher "4444444444444444444444444444" "0xcab5"
+assert fletcher "444444444444444444444444444\n" "0x3f4c"
+assert fletcher "Try not to laugh1!%&<>z" "0x137c"
+assert fletcher "123456789" "0x1ede"
+
+# Checked with https://emn178.github.io/online-tools/crc16.html
+
+assert crc "123456789" "0xbb3d"
+assert crc "4444444444444444444444444444" "0x5d9d"
+assert crc "Test string" "0x5e4c"
+assert crc "Try not to laugh1!%&<>z" "0x6579"
+assert crc "tEsTTa" "0x0763"
+
+# Big file tests
+
+head -c 128M </dev/urandom >bigfile.bin
+
+run_bench xor bigfile.bin
+run_bench fletcher bigfile.bin
+run_bench crc bigfile.bin
+
+echo "Create & check checksum..."
+head -c 16385 <(yes 4) > testfile.bin
+head -c 32766 <(yes KRIPER2004) >> testfile.bin
+./lab6_create-csum.c_run testfile.bin testfile.bin.crc8maxim
+echo "This should be OK..."
+./lab6_check-csum.c_run testfile.bin testfile.bin.crc8maxim
+
+echo "Spoiling the file..."
+sed 's/4KRIP/HELLO/' testfile.bin > testfile_broken.bin
+echo "This should NOT be OK..."
+./lab6_check-csum.c_run testfile_broken.bin testfile.bin.crc8maxim
+
+popd > /dev/null
