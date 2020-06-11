@@ -54,13 +54,26 @@ assert crc "Test string" "0x5e4c"
 assert crc "Try not to laugh1!%&<>z" "0x6579"
 assert crc "tEsTTa" "0x0763"
 
-# Big file tests
+echo "Allocating 512B file with random data..."
+head -c 512 </dev/urandom >smallfile.bin
+run_bench xor smallfile.bin
+run_bench fletcher smallfile.bin
+run_bench crc smallfile.bin
+rm smallfile.bin
 
+echo "Allocating 64KB file with random data..."
+head -c 64K </dev/urandom >midfile.bin
+run_bench xor midfile.bin
+run_bench fletcher midfile.bin
+run_bench crc midfile.bin
+rm midfile.bin
+
+echo "Allocating 128MB file with random data..."
 head -c 128M </dev/urandom >bigfile.bin
-
 run_bench xor bigfile.bin
 run_bench fletcher bigfile.bin
 run_bench crc bigfile.bin
+rm bigfile.bin
 
 echo "Create & check checksum..."
 head -c 16385 <(yes 4) > testfile.bin
