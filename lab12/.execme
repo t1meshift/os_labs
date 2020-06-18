@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+IFS=$'\n\t'
+
+pushd "$1" > /dev/null
+
+./lab12_cache.c_run > ./data && lscpu && cat /proc/cpuinfo && python2 ./graph_data.py
+
+popd > /dev/null
